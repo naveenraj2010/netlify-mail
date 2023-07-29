@@ -1,18 +1,4 @@
-const express = require('express');
-const bodyParser = require('body-parser');
 const nodemailer = require('nodemailer');
-const app = express();
-
-// Enable CORS (Cross-Origin Resource Sharing)
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  next();
-});
-
-// Parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
 
 // Function to send email
 const sendEmail = async (email, subject, content) => {
@@ -68,6 +54,3 @@ exports.handler = async (event, context) => {
     };
   }
 };
-
-// The following line is important to make the app work on Netlify
-module.exports = app;
