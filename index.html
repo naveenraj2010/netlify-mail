@@ -289,7 +289,7 @@
             headers: {
                 'Content-Type': 'application/json',
               },
-              body: serializeFormToJson(form),
+              body: serializeFormToJson(_demo_form),
           })
           .then(response => {
             if (!response.ok) {
