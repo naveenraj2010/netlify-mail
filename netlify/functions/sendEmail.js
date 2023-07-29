@@ -10,61 +10,63 @@ app.use((req, res, next) => {
   next();
 });
 
-
 // Parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-// Netlify function to send email
+// Function to send email
+const sendEmail = async (email, subject, content) => {
+  try {
+    const transporter = nodemailer.createTransport({
+      name: "www.pavo.dating.com",
+      port: 465,
+      host: "email-smtp.us-west-1.amazonaws.com",
+      auth: {
+        user: "AKIARELRLWWHW5PBOUVS",
+        pass: "BKIJNrBAR0wNm3IdgYWljpOo0NiNmeP3cgReGspXNOgE"
+      },
+      secure: true
+    });
+
+    const mailOptions = {
+      from: "Pavo <hello@pavo.dating>",
+      to: 'naveenraj@codeglo.com',
+      subject: subject,
+      html: content
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+
+    console.log("success");
+    return info;
+  } catch (error) {
+    console.error("Error sending email:", error);
+    throw error;
+  }
+};
+
+// Netlify function to handle the form submission and send email
 exports.handler = async (event, context) => {
+  try {
+    const { firstname, lastname, companySize, email, message } = JSON.parse(event.body);
+    const content = `<p>First Name: ${firstname}</p>
+                     <p>Last Name: ${lastname}</p>
+                     <p>Company Size: ${companySize}</p>
+                     <p>Email: ${email}</p>
+                     <p>Message: ${message}</p>`;
 
+    const info = await sendEmail(email, 'New Form Submission', content);
 
-    const sendEmail = async (email, subject, content, cb) => {
-
-        var transporter = nodemailer.createTransport({
-          name: "www.pavo.dating.com",
-          port:465,
-          host: "email-smtp.us-west-1.amazonaws.com",
-      
-          auth: {
-            user: "AKIARELRLWWHW5PBOUVS",
-            pass: "BKIJNrBAR0wNm3IdgYWljpOo0NiNmeP3cgReGspXNOgE"
-          },
-          secure: true
-        });
-      
-        // setup e-mail data with unicode symbols
-        var mailOptions = {
-          from: "Pavo <hello@pavo.dating>", // sender address
-          to: email, // list of receivers
-          // bcc:"selvakumar@codeglo.com",
-          subject: subject, // Subject line
-          html: content
-        };
-      
-        transporter.sendMail(mailOptions, function(error, info) {
-          if (error) {
-            
-            
     return {
-        statusCode: 500,
-        body: JSON.stringify({ message: 'Error sending email', error }),
-      };
-          }
-          else{
-           console.log("success")
-           return {
-            statusCode: 200,
-            body: JSON.stringify({ message: 'Email sent successfully' }),
-          };
-          }
-        });
-      };
-
-
-      const { firstname, lastname, companySize, email, message } = JSON.parse(event.body);
-      sendEmail(firstname, lastname, companySize, email, message)
-
+      statusCode: 200,
+      body: JSON.stringify({ message: 'Email sent successfully', info }),
+    };
+  } catch (error) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ message: 'Error sending email', error }),
+    };
+  }
 };
 
 // The following line is important to make the app work on Netlify
